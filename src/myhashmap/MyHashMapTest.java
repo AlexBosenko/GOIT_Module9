@@ -18,5 +18,11 @@ public class MyHashMapTest {
 
         myHashMap.put("bcd", "333");
         System.out.println("myHashMap = " + myHashMap);
+
+        myHashMap.put("abc", "CBA");
+        System.out.println("myHashMap = " + myHashMap);
+
+        myHashMap.put("cde", "444");
+        System.out.println("myHashMap = " + myHashMap);
     }
 }

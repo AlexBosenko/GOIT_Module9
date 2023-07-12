@@ -26,15 +26,6 @@ public class MyLinkedList<E> {
         detach(node(index));
     }
     public void clear() {
-        Node<E> curr = fstNode;
-        while (curr != null) {
-            Node<E> next = curr.nextElement;
-            curr.currElement = null;
-            curr.prevElement = null;
-            curr.nextElement = null;
-            curr = next;
-        }
-
         fstNode = null;
         lstNode = null;
         size = 0;

@@ -21,5 +21,8 @@ public class MyStackTest {
 
         System.out.println("myStack.poll() = " + myStack.poll());
         System.out.println("myStack = " + myStack);
+
+        myStack.clear();
+        System.out.println("myStack = " + myStack);
     }
 }

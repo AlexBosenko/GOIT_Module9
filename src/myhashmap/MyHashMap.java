@@ -1,5 +1,6 @@
 package myhashmap;
 
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class MyHashMap<K, V> {
@@ -10,9 +11,9 @@ public class MyHashMap<K, V> {
     public MyHashMap() {
     }
     public void put(K key, V value) {
-        if (!keyExists(key, value)) {
+        Node<K, V> newNode = new Node<>(key, value, null);
+        if (!dataExists(newNode)) {
             Node<K, V> lst = lstNode;
-            Node<K, V> newNode = new Node<>(key, value, null);
             lstNode = newNode;
             if (fstNode == null) {
                 fstNode = newNode;
@@ -24,11 +25,14 @@ public class MyHashMap<K, V> {
         }
     }
 
-    private boolean keyExists(K key, V value) {
+    private boolean dataExists(Node<K, V> newNode) {
         for (Node<K, V> curr = fstNode; curr != null; ) {
-            if (curr.key.equals(key)) {
-                curr.value = value;
+            if (curr.equals(newNode)) {
                 return true;
+            }
+            if (curr.key.equals(newNode.key) && !curr.value.equals(newNode.value)) {
+                curr.value = newNode.value;
+                return false;
             }
             curr = curr.nextElement;
         }
@@ -114,6 +118,24 @@ public class MyHashMap<K, V> {
             this.key = key;
             this.value = value;
             this.nextElement = nextElement;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Node<K, V> node = (Node<K, V>) o;
+            return (Objects.equals(key, node.key) &&
+                    Objects.equals(value, node.value));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, value);
         }
     }
 }
