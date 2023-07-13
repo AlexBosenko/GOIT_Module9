@@ -4,9 +4,6 @@ import mylinkedlist.MyLinkedList;
 import myqueue.MyQueue;
 import mystack.MyStack;
 
-import java.util.HashMap;
-import java.util.Stack;
-
 public class Main {
     public static void main(String[] args) {
         //MyArrayList
@@ -45,10 +42,12 @@ public class Main {
 
         //MyHashMap
         MyHashMap<String, String> myHashMap = new MyHashMap<>();
-        myHashMap.put("abc", "CBA");
-        myHashMap.put("bcd", "DCB");
-        myHashMap.put("cde", "EDC");
-        myHashMap.put("def", "FED");
-        System.out.println("myHashMap = " + myHashMap);
+        myHashMap.put("a", "A");
+        myHashMap.put("b", "B");
+        myHashMap.put("aaa", "AAA");
+        myHashMap.put("bb", "BB");
+        myHashMap.put("bbb", "BBB");
+        myHashMap.put("aaa", "AAA");
+        System.out.println("myHashMapa = " + myHashMap);
     }
 }

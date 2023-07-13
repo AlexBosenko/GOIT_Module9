@@ -1,142 +1,155 @@
 package myhashmap;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 public class MyHashMap<K, V> {
-    private Node<K, V> fstNode;
-    private Node<K, V> lstNode;
-    private int size;
+    private final int capacity = 16;
+    private Node<K, V>[] hashTable;
+    private int size = 0;
 
     public MyHashMap() {
-    }
-    public void put(K key, V value) {
-        Node<K, V> newNode = new Node<>(key, value, null);
-        if (!dataExists(newNode)) {
-            Node<K, V> lst = lstNode;
-            lstNode = newNode;
-            if (fstNode == null) {
-                fstNode = newNode;
-            }
-            if (lst != null) {
-                lst.nextElement = newNode;
-            }
-            size++;
-        }
+        this.hashTable = new Node[capacity];
     }
 
-    private boolean dataExists(Node<K, V> newNode) {
-        for (Node<K, V> curr = fstNode; curr != null; ) {
-            if (curr.equals(newNode)) {
-                return true;
+    public void put(K key, V value) {
+        resizeData();
+
+        int index = hash(key);
+        if (hashTable[index] == null) {
+            addFirst(key, value, index);
+        } else {
+            List<Node<K, V>> nodeList = hashTable[index].nodes;
+            boolean needAdd = true;
+            for (Node<K, V> node : nodeList) {
+                if (hash(node.key) == hash(key)) {
+                    if (Objects.equals(node.key, key)) {
+                        needAdd = false;
+                        if (!Objects.equals(node.value, value)) {
+                            node.value = value;
+                        }
+                    }
+                }
             }
-            if (curr.key.equals(newNode.key) && !curr.value.equals(newNode.value)) {
-                curr.value = newNode.value;
-                return false;
+
+            if (needAdd) {
+                nodeList.add(new Node<>(key, value));
+                size++;
             }
-            curr = curr.nextElement;
         }
-        return false;
     }
 
     public void remove(K key) {
-        Node<K, V> curr = fstNode;
-        Node<K, V> prev = fstNode;
-        while (curr != null) {
-            if (curr.key.equals(key)) {
-                if (!curr.equals(prev)) {
-                    prev.nextElement = (curr.nextElement == null) ? null : curr.nextElement;
+        int index = hash(key);
+
+        if (index < hashTable.length && hashTable[index] != null) {
+            Node<K, V> target = null;
+            List<Node<K, V>> nodeList = hashTable[index].nodes;
+            for (Node<K, V> node : nodeList) {
+                if (Objects.equals(node.key, key)) {
+                    target = node;
                 }
-                clearNode(curr);
+            }
+            if (target != null) {
+                nodeList.remove(target);
                 size--;
             }
-            prev = curr;
-            curr = curr.nextElement;
         }
     }
-    public void clear() {
-        Node<K, V> curr = fstNode;
-        while (curr != null) {
-            Node<K, V> next = curr.nextElement;
-            curr.key = null;
-            curr.value = null;
-            curr.nextElement = null;
-            curr = next;
+
+    public V get(K key) {
+        V result = null;
+        int index = hash(key);
+
+        if (index < hashTable.length && hashTable[index] != null) {
+            Node<K, V> target = null;
+            List<Node<K, V>> nodeList = hashTable[index].nodes;
+            for (Node<K, V> node : nodeList) {
+                if (Objects.equals(node.key, key)) {
+                    result = node.value;
+                }
+            }
         }
 
-        fstNode = null;
-        lstNode = null;
+        return result;
+    }
+
+    public void clear() {
+        hashTable = new Node[capacity];
         size = 0;
     }
+
+    private void addFirst(K key, V value, int index) {
+        hashTable[index] = new Node<K, V>(null, null);
+        hashTable[index].nodes.add(new Node<>(key, value));
+
+        size++;
+    }
+
+    private void resizeData() {
+        float boundarySize = size + size * 0.25f;
+
+        if (boundarySize > hashTable.length) {
+            Node<K, V>[] oldHashTable = hashTable;
+            hashTable = new Node[hashTable.length * 2];
+            for (Node<K, V> node : oldHashTable) {
+                if (node != null) {
+                    for (Node<K, V> n : node.nodes) {
+                        put(n.key, n.value);
+                    }
+                }
+            }
+        }
+    }
+
     public int size() {
         return size;
     }
-    public V get(K key) {
-        if (fstNode == null) {
-            return  null;
-        }
-        for (Node<K, V> curr = fstNode; curr != null;) {
-            if (curr.key.equals(key)) {
-                return curr.value;
-            }
-            curr = curr.nextElement;
-        }
 
-        return null;
+    public int getHash(K key) {
+        return hash(key);
     }
 
-    private void clearNode(Node<K, V> curr) {
-        curr.nextElement = null;
-        curr.key = null;
-        curr.value = null;
+    private int hash(K key) {
+        if (key == null) {
+            return 0;
+        }
+
+        return Math.abs(key.hashCode() % capacity);
     }
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(", ");
-        for (Node<K, V> curr = fstNode; curr != null;) {
-            joiner.add(GetKeyValueAsString(curr.key, curr.value));
-            curr = curr.nextElement;
+        for (Node<K, V> node : hashTable) {
+            if (node != null) {
+                for (Node<K, V> n : node.nodes) {
+                    joiner.add(GetKeyValueAsString(n.key, n.value));
+                }
+            }
         }
-        return "[" + joiner + "]";
+
+        return "{" + joiner + "}";
     }
 
     private String GetKeyValueAsString(K key, V value) {
-        return "{" +
-                key.toString() +
-                " : " +
-                value.toString() +
-                "}";
+        return key.toString() +
+                "=" +
+                value.toString();
     }
 
     private class Node<K, V> {
-        K key;
-        V value;
-        Node<K, V> nextElement;
+        private K key;
+        private V value;
+        private List<Node<K, V>> nodes;
 
-        public Node(K key, V value, Node<K, V> nextElement) {
+        public Node(K key, V value) {
             this.key = key;
             this.value = value;
-            this.nextElement = nextElement;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Node<K, V> node = (Node<K, V>) o;
-            return (Objects.equals(key, node.key) &&
-                    Objects.equals(value, node.value));
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key, value);
+            this.nodes = new LinkedList<Node<K, V>>();
         }
     }
-}
 
+}
