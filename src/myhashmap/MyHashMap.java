@@ -1,7 +1,5 @@
 package myhashmap;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -21,21 +19,24 @@ public class MyHashMap<K, V> {
         if (hashTable[index] == null) {
             addFirst(key, value, index);
         } else {
-            List<Node<K, V>> nodeList = hashTable[index].nodes;
+            Node<K, V> fstNode = hashTable[index];
+            Node<K, V> lstNode = fstNode;
             boolean needAdd = true;
-            for (Node<K, V> node : nodeList) {
-                if (hash(node.key) == hash(key)) {
-                    if (Objects.equals(node.key, key)) {
+            for (Node<K, V> curr = fstNode; curr != null;) {
+                if (hash(curr.key) == hash(key)) {
+                    if (Objects.equals(curr.key, key)) {
                         needAdd = false;
-                        if (!Objects.equals(node.value, value)) {
-                            node.value = value;
+                        if (!Objects.equals(curr.value, value)) {
+                            curr.value = value;
                         }
                     }
                 }
+                lstNode = curr;
+                curr = curr.nextElement;
             }
 
             if (needAdd) {
-                nodeList.add(new Node<>(key, value));
+                lstNode.nextElement = new Node<>(key, value, null);
                 size++;
             }
         }
@@ -45,18 +46,29 @@ public class MyHashMap<K, V> {
         int index = hash(key);
 
         if (index < hashTable.length && hashTable[index] != null) {
-            Node<K, V> target = null;
-            List<Node<K, V>> nodeList = hashTable[index].nodes;
-            for (Node<K, V> node : nodeList) {
-                if (Objects.equals(node.key, key)) {
-                    target = node;
+            Node<K, V> fstNode = hashTable[index];
+            Node<K, V> prev = fstNode;
+            for (Node<K, V> curr = fstNode; curr != null;) {
+                if (Objects.equals(curr.key, key)) {
+                    if (Objects.equals(curr, fstNode)) {
+                        hashTable[index] = curr.nextElement;
+                    }
+                    if (!Objects.equals(curr, prev)) {
+                        prev.nextElement = (curr.nextElement == null) ? null : curr.nextElement;
+                    }
+                    clearNode(curr);
+                    size--;
                 }
-            }
-            if (target != null) {
-                nodeList.remove(target);
-                size--;
+                prev = curr;
+                curr = curr.nextElement;
             }
         }
+    }
+
+    private void clearNode(Node<K,V> curr) {
+        curr.key = null;
+        curr.value = null;
+        curr.nextElement = null;
     }
 
     public V get(K key) {
@@ -65,11 +77,12 @@ public class MyHashMap<K, V> {
 
         if (index < hashTable.length && hashTable[index] != null) {
             Node<K, V> target = null;
-            List<Node<K, V>> nodeList = hashTable[index].nodes;
-            for (Node<K, V> node : nodeList) {
-                if (Objects.equals(node.key, key)) {
-                    result = node.value;
+            Node<K, V> fstNode = hashTable[index];
+            for (Node<K, V> curr = fstNode; curr != null;) {
+                if (Objects.equals(curr.key, key)) {
+                    result = curr.value;
                 }
+                curr = curr.nextElement;
             }
         }
 
@@ -82,8 +95,7 @@ public class MyHashMap<K, V> {
     }
 
     private void addFirst(K key, V value, int index) {
-        hashTable[index] = new Node<K, V>(null, null);
-        hashTable[index].nodes.add(new Node<>(key, value));
+        hashTable[index] = new Node<K, V>(key, value, null);
 
         size++;
     }
@@ -92,15 +104,10 @@ public class MyHashMap<K, V> {
         float boundarySize = size + size * 0.25f;
 
         if (boundarySize > hashTable.length) {
-            Node<K, V>[] oldHashTable = hashTable;
-            hashTable = new Node[hashTable.length * 2];
-            for (Node<K, V> node : oldHashTable) {
-                if (node != null) {
-                    for (Node<K, V> n : node.nodes) {
-                        put(n.key, n.value);
-                    }
-                }
-            }
+            Node<K, V>[] newHashTable = new Node[hashTable.length * 2];
+            System.arraycopy(hashTable, 0, newHashTable, 0, hashTable.length);
+
+            hashTable = newHashTable;
         }
     }
 
@@ -123,10 +130,12 @@ public class MyHashMap<K, V> {
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(", ");
+
         for (Node<K, V> node : hashTable) {
             if (node != null) {
-                for (Node<K, V> n : node.nodes) {
-                    joiner.add(GetKeyValueAsString(n.key, n.value));
+                for (Node<K, V> curr = node; curr != null;) {
+                    joiner.add(getKeyValueAsString(curr.key, curr.value));
+                    curr = curr.nextElement;
                 }
             }
         }
@@ -134,7 +143,7 @@ public class MyHashMap<K, V> {
         return "{" + joiner + "}";
     }
 
-    private String GetKeyValueAsString(K key, V value) {
+    private String getKeyValueAsString(K key, V value) {
         return key.toString() +
                 "=" +
                 value.toString();
@@ -143,12 +152,12 @@ public class MyHashMap<K, V> {
     private class Node<K, V> {
         private K key;
         private V value;
-        private List<Node<K, V>> nodes;
+        private Node<K, V> nextElement;
 
-        public Node(K key, V value) {
+        public Node(K key, V value, Node<K, V> nextElement) {
             this.key = key;
             this.value = value;
-            this.nodes = new LinkedList<Node<K, V>>();
+            this.nextElement = nextElement;
         }
     }
 
