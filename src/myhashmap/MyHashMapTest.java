@@ -8,7 +8,21 @@ public class MyHashMapTest {
         myHashMap.put("aaa", "AAA");
         myHashMap.put("bb", "BB");
         myHashMap.put("bbb", "BBB");
-        myHashMap.put("aaa", "AAA");
+        myHashMap.put("c", "C");
+        myHashMap.put("d", "D");
+        myHashMap.put("e", "E");
+        myHashMap.put("f", "F");
+        myHashMap.put("g", "G");
+        myHashMap.put("h", "H");
+        myHashMap.put("i", "I");
+        myHashMap.put("j", "J");
+        myHashMap.put("k", "K");
+        myHashMap.put("l", "L");
+        myHashMap.put("m", "M");
+        myHashMap.put("n", "N");
+        myHashMap.put("o", "P");
+        myHashMap.put("q", "Q");
+        myHashMap.put("r", "R");
         System.out.println("myHashMapa = " + myHashMap);
 
         myHashMap.put("a", "New value for key");
@@ -30,6 +44,8 @@ public class MyHashMapTest {
 
         System.out.println("myHashMapa.get(\"dfdsfs\") = " + myHashMap.get("sdfsdf"));
         System.out.println("myHashMapa.get(\"bbb\") = " + myHashMap.get("bbb"));
+
+        System.out.println("myHashMap.size() = " + myHashMap.size());
 
         myHashMap.clear();
         System.out.println("myHashMapa = " + myHashMap);

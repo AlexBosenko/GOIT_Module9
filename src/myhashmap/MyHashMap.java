@@ -101,13 +101,18 @@ public class MyHashMap<K, V> {
     }
 
     private void resizeData() {
-        float boundarySize = size + size * 0.25f;
-
-        if (boundarySize > hashTable.length) {
-            Node<K, V>[] newHashTable = new Node[hashTable.length * 2];
-            System.arraycopy(hashTable, 0, newHashTable, 0, hashTable.length);
-
-            hashTable = newHashTable;
+        if (size + 1 == hashTable.length) {
+            Node<K, V>[] oldHashTable = hashTable;
+            hashTable = new Node[oldHashTable.length * 2];
+            size = 0;
+            for (Node<K, V> node : oldHashTable) {
+                if (node != null) {
+                    for (Node<K, V> curr = node; curr != null;) {
+                        put(curr.key, curr.value);
+                        curr = curr.nextElement;
+                    }
+                }
+            }
         }
     }
 
@@ -124,7 +129,7 @@ public class MyHashMap<K, V> {
             return 0;
         }
 
-        return Math.abs(key.hashCode() % capacity);
+        return Math.abs(key.hashCode() % hashTable.length);
     }
 
     @Override
