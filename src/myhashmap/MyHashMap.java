@@ -13,8 +13,15 @@ public class MyHashMap<K, V> {
     }
 
     public void put(K key, V value) {
-        resizeData();
+        if (size == hashTable.length) {
+            resizeData();
+        }
 
+        putValue(key, value);
+        size++;
+    }
+
+    private void putValue(K key, V value) {
         int index = hash(key);
         if (hashTable[index] == null) {
             addFirst(key, value, index);
@@ -37,7 +44,6 @@ public class MyHashMap<K, V> {
 
             if (needAdd) {
                 lstNode.nextElement = new Node<>(key, value, null);
-                size++;
             }
         }
     }
@@ -96,21 +102,16 @@ public class MyHashMap<K, V> {
 
     private void addFirst(K key, V value, int index) {
         hashTable[index] = new Node<K, V>(key, value, null);
-
-        size++;
     }
 
     private void resizeData() {
-        if (size + 1 == hashTable.length) {
-            Node<K, V>[] oldHashTable = hashTable;
-            hashTable = new Node[oldHashTable.length * 2];
-            size = 0;
-            for (Node<K, V> node : oldHashTable) {
-                if (node != null) {
-                    for (Node<K, V> curr = node; curr != null;) {
-                        put(curr.key, curr.value);
-                        curr = curr.nextElement;
-                    }
+        Node<K, V>[] oldHashTable = hashTable;
+        hashTable = new Node[oldHashTable.length * 2];
+        for (Node<K, V> node : oldHashTable) {
+            if (node != null) {
+                for (Node<K, V> curr = node; curr != null;) {
+                    putValue(curr.key, curr.value);
+                    curr = curr.nextElement;
                 }
             }
         }
